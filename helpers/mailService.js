@@ -2,8 +2,6 @@ const nodemailer = require("nodemailer");
 const { OTPMailTemp } = require("./emailTemplates");
 
 // Create a transporter using SMTP
-
-
 const transporter = nodemailer.createTransport({
   service: "gmail",
   port: 587,

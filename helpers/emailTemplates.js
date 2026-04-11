@@ -21,8 +21,8 @@ const OTPMailTemp = (otp) => {
         <!-- OTP Box -->
         <div style="text-align:center; margin:30px 0;">
           <span style="display:inline-block; font-size:28px; letter-spacing:8px; 
-                       background-color:#f2f2f2; padding:15px 25px; 
-                       border-radius:6px; font-weight:bold; color:#333;">
+                  background-color:#f2f2f2; padding:15px 25px; 
+                  border-radius:6px; font-weight:bold; color:#333;">
             ${otp}
           </span>
         </div>
