@@ -1,7 +1,11 @@
 const { mailSender } = require("../helpers/mailService");
-const { isValidEmail, generateOTP, generateAccessToken } = require("../helpers/utils");
+const {
+  isValidEmail,
+  generateOTP,
+  generateAccessToken,
+} = require("../helpers/utils");
 const authSchema = require("../models/authSchema");
-
+const { uploadToCloudinary } = require("../helpers/cloudinaryService");
 const registration = async (req, res) => {
   const { fullName, email, password } = req.body;
   try {
@@ -74,31 +78,51 @@ const login = async (req, res) => {
     if (!matchPass)
       return res.status(400).send({ message: "Invalid Credential" });
 
-    const accessToken = generateAccessToken({ _id: user._id, email: user.email })
+    const accessToken = generateAccessToken({
+      _id: user._id,
+      email: user.email,
+    });
 
-    res.cookie("accessToken", accessToken)
+    res.cookie("accessToken", accessToken);
 
     res.status(200).send({ message: "Login Successfully" });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).send({ message: "Internal Server Error!" });
+  }
+};
+
+const userProfile = async (req, res) => {
+  try {
+    const userData = await authSchema
+      .findOne({ _id: req.user._id })
+      .select("avatar email fullName");
+
+    if (!userData) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.status(200).send(userData);
   } catch (error) {
     res.status(500).send({ message: "Internal Server Error!" });
   }
 };
 
-
-const userProfile = async (req, res) => {
+const updateProfile = async (req, res) => {
+  const { fullName } = req.body;
+  const userId = req.user._id;
   try {
-    const userData = await authSchema.findOne({ _id: req.user._id }).select("avatar email fullName")
-
-    if (!userData) {
-      return res.status(404).send({ message: "User not found" })
-    }
-
-    res.status(200).send(userData)
-
+    
+    const avatarUrl = await uploadToCloudinary({
+      mimetype: req.file.mimetype,
+      imgBuffer: req.file.buffer,
+    });
+    res.send(avatarUrl.secure_url);
+    
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error!" });
+    console.log(error);
   }
+};
 
-}
-
-module.exports = { registration, verfyOTP, login, userProfile };
+module.exports = { registration, verfyOTP, login, userProfile, updateProfile };
