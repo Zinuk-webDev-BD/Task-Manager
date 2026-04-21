@@ -5,7 +5,7 @@ const {
   generateAccessToken,
 } = require("../helpers/utils");
 const authSchema = require("../models/authSchema");
-const { uploadToCloudinary } = require("../helpers/cloudinaryService");
+const { uploadToCloudinary, destroyFromCloudinary } = require("../helpers/cloudinaryService");
 const registration = async (req, res) => {
   const { fullName, email, password } = req.body;
   try {
@@ -113,12 +113,26 @@ const updateProfile = async (req, res) => {
   const { fullName } = req.body;
   const userId = req.user._id;
   try {
+
+    const userData = await authSchema.findOne({_id: userId});
+
+    if(fullName.trim()) userData.fullName = fullName;
+
+    if(req.file){
+      
+      const avatarUrl = await uploadToCloudinary({
+        mimetype: req.file.mimetype,
+        imgBuffer: req.file.buffer,
+      });
+      
+      destroyFromCloudinary(userData.avatar)
+      
+      userData.avatar = await avatarUrl.secure_url;
+    }
     
-    const avatarUrl = await uploadToCloudinary({
-      mimetype: req.file.mimetype,
-      imgBuffer: req.file.buffer,
-    });
-    res.send(avatarUrl.secure_url);
+    userData.save()
+    
+    res.status(200).send({message: "Profile updated successfully"})
     
   } catch (error) {
     console.log(error);

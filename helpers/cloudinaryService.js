@@ -6,4 +6,14 @@ const uploadToCloudinary = async ({ mimetype, imgBuffer }) => {
   return await cloudinary.uploader.upload(dataUrl);
 };
 
-module.exports = { uploadToCloudinary };
+const destroyFromCloudinary = (url)=>{
+  const publicId = url.split("/").pop().split(".").shift()
+  
+  cloudinary.uploader.destroy(publicId, (error, result) => {
+    if(error){
+      console.log("Destroy From Cloudinary:",error)
+    }
+  });
+}
+
+module.exports = { uploadToCloudinary, destroyFromCloudinary };
