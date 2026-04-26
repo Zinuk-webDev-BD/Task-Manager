@@ -114,26 +114,26 @@ const updateProfile = async (req, res) => {
   const userId = req.user._id;
   try {
 
-    const userData = await authSchema.findOne({_id: userId});
+    const userData = await authSchema.findOne({ _id: userId });
 
-    if(fullName.trim()) userData.fullName = fullName;
+    if (fullName && fullName.trim()) userData.fullName = fullName;
 
-    if(req.file){
-      
+    if (req.file) {
+
       const avatarUrl = await uploadToCloudinary({
         mimetype: req.file.mimetype,
         imgBuffer: req.file.buffer,
       });
-      
+
       destroyFromCloudinary(userData.avatar)
-      
+
       userData.avatar = await avatarUrl.secure_url;
     }
-    
+
     userData.save()
-    
-    res.status(200).send({message: "Profile updated successfully"})
-    
+
+    res.status(200).send({ message: "Profile updated successfully" })
+
   } catch (error) {
     console.log(error);
   }
