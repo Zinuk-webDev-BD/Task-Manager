@@ -5,23 +5,35 @@ const {
   generateAccessToken,
 } = require("../helpers/utils");
 const authSchema = require("../models/authSchema");
-const { uploadToCloudinary, destroyFromCloudinary } = require("../helpers/cloudinaryService");
+const {
+  uploadToCloudinary,
+  destroyFromCloudinary,
+} = require("../helpers/cloudinaryService");
 const registration = async (req, res) => {
   const { fullName, email, password } = req.body;
   try {
     if (!fullName?.trim())
-      return res.status(400).send({ message: "FullName is required." });
-    if (!email) return res.status(400).send({ message: "Email is required." });
+      return res
+        .status(400)
+        .send({ message: "FullName is required.", field: "fullName" });
+    if (!email)
+      return res
+        .status(400)
+        .send({ message: "Email is required.", field: "email" });
     if (!isValidEmail(email))
-      return res.status(400).send({ message: "Email is invalid." });
+      return res
+        .status(400)
+        .send({ message: "Email is invalid.", field: "email" });
     if (!password)
-      return res.status(400).send({ message: "Password is required." });
+      return res
+        .status(400)
+        .send({ message: "Password is required.", field: "password" });
 
     // Check if email already exist
     const existingEmail = await authSchema.findOne({ email });
 
     if (existingEmail)
-      return res.status(400).send({ message: "This email already registerd" });
+      return res.status(400).send({ message: "This email already registerd", field: "email" });
 
     // Generate OTP
     const OTP_Num = generateOTP();
@@ -70,13 +82,13 @@ const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await authSchema.findOne({ email });
-    if (!user) return res.status(400).send({ message: "Invalid Credential" });
+    if (!user) return res.status(400).send({ message: "Email is not register", field: "email" });
     if (!user.isVerified)
-      return res.status(400).send({ message: "Email is not verified." });
+      return res.status(400).send({ message: "Email is not verified.", field: "email" });
     const matchPass = await user.comparePassword(password);
 
     if (!matchPass)
-      return res.status(400).send({ message: "Invalid Credential" });
+      return res.status(400).send({ message: "Invalid Credential", field: "password" });
 
     const accessToken = generateAccessToken({
       _id: user._id,
@@ -113,27 +125,24 @@ const updateProfile = async (req, res) => {
   const { fullName } = req.body;
   const userId = req.user._id;
   try {
-
     const userData = await authSchema.findOne({ _id: userId });
 
     if (fullName && fullName.trim()) userData.fullName = fullName;
 
     if (req.file) {
-
       const avatarUrl = await uploadToCloudinary({
         mimetype: req.file.mimetype,
         imgBuffer: req.file.buffer,
       });
 
-      destroyFromCloudinary(userData.avatar)
+      destroyFromCloudinary(userData.avatar);
 
       userData.avatar = await avatarUrl.secure_url;
     }
 
-    userData.save()
+    userData.save();
 
-    res.status(200).send({ message: "Profile updated successfully" })
-
+    res.status(200).send({ message: "Profile updated successfully" });
   } catch (error) {
     console.log(error);
   }
