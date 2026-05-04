@@ -32,7 +32,7 @@ const projectList = async (req, res) => {
           $options: "i",
         },
       })
-      .populate("author", "fullName avatar");
+      .populate("author members", "fullName avatar").select("title description tasks._id");
 
     if (!projects)
       return res.status(400).send({ message: "Project not found" });

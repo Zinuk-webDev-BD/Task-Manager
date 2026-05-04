@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useLoginMutation } from "../services/api";
 
 const Login = ({ onSubmit }) => {
+  const navigate = useNavigate();
   const [loginUser] = useLoginMutation();
   const [form, setForm] = useState({
     email: "",
@@ -53,8 +54,9 @@ const Login = ({ onSubmit }) => {
       if (field == "password")
         return setErrors({ password: res.error.data.message });
     }
-    console.log("Login successfully");
-
+    setTimeout(() => {
+      navigate("/");
+    }, 500);
   };
 
   return (

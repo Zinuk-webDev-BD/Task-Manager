@@ -33,7 +33,9 @@ const registration = async (req, res) => {
     const existingEmail = await authSchema.findOne({ email });
 
     if (existingEmail)
-      return res.status(400).send({ message: "This email already registerd", field: "email" });
+      return res
+        .status(400)
+        .send({ message: "This email already registerd", field: "email" });
 
     // Generate OTP
     const OTP_Num = generateOTP();
@@ -82,13 +84,20 @@ const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await authSchema.findOne({ email });
-    if (!user) return res.status(400).send({ message: "Email is not register", field: "email" });
+    if (!user)
+      return res
+        .status(400)
+        .send({ message: "Email is not register", field: "email" });
     if (!user.isVerified)
-      return res.status(400).send({ message: "Email is not verified.", field: "email" });
+      return res
+        .status(400)
+        .send({ message: "Email is not verified.", field: "email" });
     const matchPass = await user.comparePassword(password);
 
     if (!matchPass)
-      return res.status(400).send({ message: "Invalid Credential", field: "password" });
+      return res
+        .status(400)
+        .send({ message: "Invalid Credential", field: "password" });
 
     const accessToken = generateAccessToken({
       _id: user._id,

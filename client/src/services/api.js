@@ -20,7 +20,26 @@ export const apiService = createApi({
         body: loginData,
       }),
     }),
+    getProfile: build.query({
+      query: () => "/auth/profile",
+    }),
+    getProjectList: build.query({
+      query: () => "/project/list",
+    }),
+    createProject: build.mutation({
+      query: (projectData) => ({
+        url: "/project/create",
+        method: "POST",
+        body: projectData,
+      }),
+    }),
   }),
 });
 
-export const { useRegistrationMutation, useLoginMutation } = apiService;
+export const {
+  useRegistrationMutation,
+  useLoginMutation,
+  useGetProfileQuery,
+  useGetProjectListQuery,
+  useCreateProjectMutation,
+} = apiService;
