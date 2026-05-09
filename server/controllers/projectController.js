@@ -32,7 +32,7 @@ const projectList = async (req, res) => {
           $options: "i",
         },
       })
-      .populate("author members", "fullName avatar").select("title description tasks._id");
+      .populate("author members", "fullName avatar").select("title description tasks._id slug");
 
     if (!projects)
       return res.status(400).send({ message: "Project not found" });
@@ -45,6 +45,25 @@ const projectList = async (req, res) => {
   }
 };
 
+const projectDetails = async (req, res) => {
+  const { slug } = req.params;
+  console.log(slug);
+  
+  try {
+    const project = await projectSchema.findOne({
+       $or: [{ author: req.user._id }, { members: req.user._id }],
+       slug,
+      });
+    if(!project){
+      return res.status(404).send({ message: "Not Found!" });
+    }
+    res.status(200).send(project);
+  } catch (error)
+   {
+    console.log(error);
+    
+  }
+}
 const addTeamMemberToProject = async (req, res) => {
   const { email, projectId } = req.body;
   try {
@@ -122,4 +141,5 @@ module.exports = {
   projectList,
   addTeamMemberToProject,
   addTaskToProject,
+  projectDetails,
 };
