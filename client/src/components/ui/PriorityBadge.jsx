@@ -1,12 +1,12 @@
-const colors = {
-  low: "bg-green-100 text-green-700",
-  mid: "bg-yellow-100 text-yellow-700",
-  high: "bg-red-100 text-red-700",
-};
-
 const PriorityBadge = ({ priority }) => {
+  const styles = {
+    high: "bg-red-500 text-white",
+    mid: "bg-yellow-400 text-black",
+    low: "bg-green-500 text-white",
+  };
+
   return (
-    <span className={`px-2 py-1 text-xs rounded ${colors[priority]}`}>
+    <span className={`px-2 py-1 text-xs rounded ${styles[priority]}`}>
       {priority?.toUpperCase()}
     </span>
   );

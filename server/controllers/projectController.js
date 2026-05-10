@@ -3,143 +3,137 @@ const authSchema = require("../models/authSchema");
 const projectSchema = require("../models/projectSchema");
 
 const createProject = async (req, res) => {
-  const { title, description } = req.body;
+  const {title, description} = req.body;
+
   try {
     const slug = generateSlug(title);
     const project = await projectSchema({
-      title,
-      description,
-      slug,
-      author: req.user._id,
+     title,
+     description,
+     slug,
+     author: req.user._id,
     });
-    project.save();
 
-    res.status(200).send({ message: "Project Created Successfully" });
+    project.save();
+   res.status(200).send({ message: "Project created successfully" });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Internal Server Error!" });
+    res.status(500).send({ message: "Internal server is error" });
   }
 };
 
 const projectList = async (req, res) => {
   try {
     const { search } = req.query;
-    const projects = await projectSchema
-      .find({
-        $or: [{ author: req.user._id }, { members: req.user._id }],
-        title: {
-          $regex: search || "",
-          $options: "i",
-        },
-      })
-      .populate("author members", "fullName avatar").select("title description tasks._id slug");
-
-    if (!projects)
-      return res.status(400).send({ message: "Project not found" });
-
-    res.status(200).send({ projects });
+    const projects = await projectSchema.find({ 
+      $or: [
+        {author:  req.user._id }, 
+        { members: req.user._id },
+      ],
+      title: {
+      $regex: search || " ", $options: "i"
+    }
+  }).populate("author members", "fullName avatar").select("title description tasks._id slug");
+    if(!projects) return res.status(400).send({ message: "project not found" });
+     res.status(200).send({ projects })
   } catch (error) {
-    console.log(error);
-
-    res.status(500).send({ message: "Internal Server Error!" });
+    res.status(500).send({ message: "Internal server is error" });
   }
 };
 
 const projectDetails = async (req, res) => {
   const { slug } = req.params;
-  console.log(slug);
+try {
+  const project = await projectSchema.findOne({
+    $or: [{ author:  req.user._id },  { members: req.user._id }], 
+    slug, 
+  }).populate("author members", "fullName avatar");
   
-  try {
-    const project = await projectSchema.findOne({
-       $or: [{ author: req.user._id }, { members: req.user._id }],
-       slug,
-      });
-    if(!project){
-      return res.status(404).send({ message: "Not Found!" });
-    }
-    res.status(200).send(project);
-  } catch (error)
-   {
-    console.log(error);
-    
+  if(!project) {
+    return res.status(404).send({ message: "Not found" });
   }
+  res.status(200).send(project);
+} catch (error) {
+  console.log(error);
 }
-const addTeamMemberToProject = async (req, res) => {
-  const { email, projectId } = req.body;
+};
+
+
+const addTeamMembersToProject = async (req, res) => {
+  const { email, projectId } =  req.body;
   try {
     const existEmail = await authSchema.findOne({ email });
-    if (!existEmail)
-      return res.status(400).send({ message: "Email not exist" });
+    if(!existEmail) return res.status(400).send({ message: "email is not exist" });
 
-    const existMember = await projectSchema.findOne({
-      _id: projectId,
-      $or: [{ author: existEmail._id }, { members: existEmail._id }],
+
+    const existMembers = await projectSchema.findOne({
+     _id: projectId,
+      $or: [
+        { author:  existEmail._id }, 
+        { members: existEmail._id },
+      ],
     });
-    if (existMember)
-      return res.status(400).send({ message: "This Member already exist" });
-    const project = await projectSchema.findOneAndUpdate(
-      { _id: projectId },
-      { members: existEmail._id },
-      { new: true },
-    );
-    if (!project) return res.status(400).send({ message: "Invalid Request" });
 
-    res.status(200).send({ message: "Team Mebmer added successfylly" });
+    if(existMembers) return res.status(400).send({message: "this member is already exit"});
+    const project = await projectSchema.findOneAndUpdate({ _id: projectId }, { members: existEmail._id }, {new: true});
+    if(!project) return res.status(400).send({ message: "invalid request" });
+
+    res.status(200).send({ message: "team members added successfully" });
+
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Internal Server Error!" });
+     console.log(error);
+     res.status(500).send({ message: "Internal server is error" });
   }
 };
 
 const addTaskToProject = async (req, res) => {
   const { title, description, priority, assignedTo, projectId } = req.body;
   try {
-    if (!title)
-      return res.status(400).send({ message: "Task Title is required" });
-    if (!description)
+    if(!title) 
+      return res.status(400).send({ message: "Task title is required" });
+    if(!description) 
       return res.status(400).send({ message: "Task Description is required" });
-    if (!priority)
+    if(!priority) 
       return res.status(400).send({ message: "Task Priority is required" });
-    if (!["mid", "low", "high"].includes(priority))
-      return res.status(400).send({ message: "Invalid priority value" });
-    if (!projectId)
-      return res.status(400).send({ message: "Project not found" });
+    if(!["high", "mid", "low"].includes(priority))
+      return res.status(400).send({ message: "Invalid Priority value" });
+    if(!projectId) 
+      return res.status(400).send({ message: "Project is not found" });
 
-    if (assignedTo && !Array.isArray(assignedTo))
-      return res.status(400).send({ message: "Invalid assigned data" });
-
-    if (assignedTo) {
-      for (const userId of assignedTo) {
-        const existMember = await projectSchema.findOne({
-          _id: projectId,
-          $or: [{ author: userId }, { members: userId }],
-        });
-
-        if (!existMember)
-          return res.status(400).send({ message: "Invalid User" });
-      }
-    }
+    if(assignedTo && !Array.isArray(assignedTo)) 
+    return res.status(400).send({ message: "Invalid assigned data" });
     
-    const projectData = await projectSchema.findOneAndUpdate(
-      { _id: projectId },
-      { tasks: { title, description, priority, assignedTo } },
-      { returnDocument: "after" },
-    );
-    if (!projectData)
-      return res.status(400).send({ message: "Project not found" });
+     if(assignedTo) {
+      
+      for (const userId of assignedTo) {
 
-    res
-      .status(200)
-      .send({ message: "Project created successfylly", projectData });
+        const existMembers = await projectSchema.findOne({
+      _id: projectId,    
+      $or: [
+        { author: projectId }, 
+        { members: projectId },
+      ],
+    });
+      if(existMembers) 
+        return res.status(400).send({ message: "Invalid user" });  
+      }  
+     }
+
+   const projectData = await projectSchema.findOneAndUpdate(
+    { _id: projectId },
+    { $push: { tasks: {title, description, priority, assignedTo} } },
+    { returnDocument: "after" },
+   );
+
+   if(!projectData) return res.status(400).send({ message: "Project not found" }); 
+   res.status(200).send({ message: "project created successfully" });
+
   } catch (error) {
     console.log(error);
   }
-};
+}
 
-module.exports = {
-  createProject,
-  projectList,
-  addTeamMemberToProject,
-  addTaskToProject,
-  projectDetails,
-};
+
+
+
+module.exports = { createProject, projectList, addTeamMembersToProject, addTaskToProject, projectDetails };

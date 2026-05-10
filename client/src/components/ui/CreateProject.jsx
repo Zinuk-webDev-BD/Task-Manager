@@ -1,62 +1,54 @@
-import React, { useState } from "react";
-import Input from "./Input";
-import Button from "./Button";
-import {
-  useCreateProjectMutation,
-  useGetProjectListQuery,
-} from "../../services/api";
+import React, { useState } from 'react'
+import Input from './Input';
+import Button from './Button';
+import { useCreateProjectMutation, useGetProjectListQuery } from '../../services/api';
 
-const CreateProject = ({ modal }) => {
-  const { refetch } = useGetProjectListQuery();
+const CreateProject = (modal) => {
+  const { refetch } = useGetProjectListQuery()
   const [projectData, setProjectData] = useState({
     title: "",
     description: "",
   });
-  const [createProject] = useCreateProjectMutation();
-  const handelCreate = async (e) => {
-    e.preventDefault();
-    const res = await createProject(projectData);
-    if (res.error) {
-      console.log(res.error);
-      return;
+  const [CreateProject] = useCreateProjectMutation();
+    const handleCreate = async (e) => {
+     e.preventDefault();
+     const res = await createProject(projectData);
+     if(res.error) {console.log(res.error);
+      return
+     }
+     refetch();
+     modal(false);
     }
-    refetch();
-    modal(false);
-  };
   return (
-    <div className="h-screen w-full bg-gray-700/40 fixed top-0 left-0 flex items-center justify-center">
+    <div className="h-screen w-full bg-gray-700/10 fixed top-0 left-0 flex items-center justify-center">
       <form
-        onSubmit={handelCreate}
-        className="bg-white flex flex-col rounded-xl shadow space-y-4 max-w-md mx-auto p-6 w-full"
+        onSubmit={handleCreate}
+        className="max-w-md max-auto p-6 bg-blue-400 shadow space-y-4 rounded-xl w-full"
       >
-        <h2 className="text-xl font-semibold text-gray-800">
+        <h2 className="mb-6 text-2xl font-semibold text-center">
           Create a new project
         </h2>
         <Input
-          label="Project Title"
+          label="project title"
           type="text"
-          placeholder="Project Title here"
-          onChange={(e) =>
-            setProjectData((prev) => ({ ...prev, title: e.target.value }))
-          }
-          //   error={}
+          placeholder="project title here"
+          onChange={(e) => 
+           setProjectData((prev) => ({ ...prev, title: e.target.value }))}     
         />
         <Input
-          label="Project Description"
+          label="project description"
           type="text"
-          placeholder="Project Description here"
-          //   error={}
-          onChange={(e) =>
-            setProjectData((prev) => ({ ...prev, description: e.target.value }))
-          }
+          placeholder="project description here"
+          onChange={(e) => 
+           setProjectData((prev) => ({ ...prev, description: e.target.value }))}    
         />
-
-        <Button type="submit" fullWidth>
-          Create Project
+        <Button
+          type="submit" fullWidth>
+        Create project
         </Button>
       </form>
     </div>
-  );
-};
+  )
+}
 
 export default CreateProject;

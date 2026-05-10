@@ -43,7 +43,7 @@ const [modal, setModal] = useState(false);
             <TaskCard key={project._id} project= {project} />
             ))}
      </div>
-     {modal && <CreateProject modal={(mode) => setModal(mode)} />}   
+     {modal && (<CreateProject modal={(mode) => setModal(mode)} />)}   
     </div>
   );
 };

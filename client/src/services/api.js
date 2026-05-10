@@ -1,20 +1,21 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+
 
 export const apiService = createApi({
-  baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8000",
+    baseQuery:fetchBaseQuery({
+    baseUrl: 'http://localhost:8000',
     credentials: "include",
   }),
   endpoints: (build) => ({
-    registration: build.mutation({
-      query: (registerData) => ({
-        url: "/auth/registration",
-        method: "POST",
-        body: registerData,
-      }),
+   registration: build.mutation({
+    query: (registerData) => ({
+         url: "/auth/registration",
+         method: "POST",
+         body: registerData,
     }),
-    login: build.mutation({
-      query: (loginData) => ({
+   }),
+   login: build.mutation({
+    query: (loginData) => ({
         url: "/auth/login",
         method: "POST",
         body: loginData,
@@ -27,23 +28,33 @@ export const apiService = createApi({
       query: () => "/project/list",
     }),
     createProject: build.mutation({
-      query: (projectData) => ({
+     query: (projectData) => ({
         url: "/project/create",
         method: "POST",
         body: projectData,
-      }),
+     }),
     }),
-    getProjectDetails :build.query({
-      query: (slug) => `/project/details/${slug}`,
+    getProjectDetails: build.query({
+     query: (slug) => `/project/details/${slug}`,
+    }),
+    addNewTask: build.mutation({
+     query: (taskData) => ({
+        url: "/project/addtask",
+        method: "POST",
+        body: taskData,
+     }),
     }),
   }),
 });
 
+
+
 export const {
-  useRegistrationMutation,
-  useLoginMutation,
-  useGetProfileQuery,
-  useGetProjectListQuery,
-  useCreateProjectMutation,
+  useRegistrationMutation, 
+  useLoginMutation, 
+  useGetProfileQuery, 
+  useGetProjectListQuery, 
+  useCreateProjectMutation, 
   useGetProjectDetailsQuery,
+  useAddNewTaskMutation,
 } = apiService;
